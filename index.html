@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeJaVJy</title>
+    <link rel="icon" type="image/x-icon" href="https://avatars.mds.yandex.net/i?id=15013b119e55de7db768b6db41ca510cac42b485-9067973-images-thumbs&n=13">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', monospace;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .video-bg {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #000;
+        }
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+        .card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            animation: fadeIn 1.5s ease-in;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-content {
+            flex: 1;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            animation: pulseGlow 2s infinite;
+            filter: grayscale(100%) contrast(120%);
+            transition: filter 0.3s, transform 0.3s;
+        }
+
+        .avatar:hover {
+            filter: grayscale(0%) contrast(100%);
+        }
+
+        .avatar-link {
+            display: block;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        
+        .avatar-link:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .skills, .tools, .contact {
+            opacity: 0;
+            animation: slideIn 0.5s ease-out forwards;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .skills { animation-delay: 0.5s; }
+        .tools { animation-delay: 1s; }
+        .contact { animation-delay: 1.5s; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .music-control:hover {
+            opacity: 1;
+        }
+        .section-title {
+            color: #888;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+        h1 {
+            font-size: 3.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .card h1 {
+            animation: flicker 2s infinite alternate;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff;
+        }
+        .skills, .tools, .contact {
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 0.99;
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff;
+            }
+            20%, 24%, 55% {
+                opacity: 0.5;
+                text-shadow: none;
+            }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            background: linear-gradient(45deg, #000000, #1a1a1a);
+        }
+        .loading-text {
+            font-size: 2.5rem;
+            position: relative;
+            color: #ffffff;
+            text-shadow: 0 0 10px #1b1b1b;
+            margin-bottom: 2rem;
+            letter-spacing: 4px;
+            animation: glitchText 3s infinite;
+        }
+        .warning-text {
+            color: #a5a5a5;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px #3b3838;
+            animation: pulseText 2s infinite;
+            transform: translateY(20px);
+        }
+        @keyframes glitchText {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(0deg); filter: brightness(1); }
+            21% { transform: skew(20deg); filter: brightness(1.5); }
+            22% { transform: skew(-15deg); filter: brightness(1); }
+            23% { transform: skew(0deg); }
+            90% { transform: skew(0deg); opacity: 1; }
+            100% { transform: skew(0deg); opacity: 0; }
+        }
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.5; transform: translateY(20px) scale(1); }
+            50% { opacity: 1; transform: translateY(20px) scale(1.1); }
+        }
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://yandex-images.clstorage.net/vsB5K6131/9f37cd0bIoQE/h2Tcm9TUtF_ns47_wrwHNJAMZ_w754MZL1Ohp98w01Ykfvgw7SZGsY1zqnHozHLO3Wl_HS69u-m62YVdOoewUfNB2I4wpLQOowMqPmJ9BmBR2FZdHmdAepiUlsEdhqSRJtwstdhTJvBJh8tnjj1lXKkteTxOKY6MOIjXKc6Q5bc05n1YgWQEzlLxX36h7ORQo95m2qngACsKt9Szz-dEowXN_ZS4QRZhv8foFoxaNd_6_zp_b8heTglbF6rvgabGtbZOGfK21K5iU45fgC4F4kP8VyjpAiG5idf20N4khaPVXrxXecEkg2-kSvUs-lbeqY4o3E46Xj_YWCX5vPHmR4bUTyhzN1dco5O_nhBudmEzrqTIOBID60hWVEGfhAWjNt4dt5pw9MHtFroUnkj2_nuOuWxeuY2dq6rHGs8Cd_ek1V2JQBSmzLNzLZ_yXtRwoY7XqJlhEIkKlZXwfiU0wBY-3Qf4EgTQ_PRJJ3-LNY27fGtt76rsbkgp1Nr-cxTGBHYM-GFmhvwyUv_8oK3WIFP9tDgaUtFbyZQ1cKwkhCIUbm0EmFMHMG7Fykduu1ceWVy4LG057k3ZiVaLr7KEJkQ0_zgQBcSMEiA9r-LdBMAQ3rZqamLCG7n3JXCtBpdA1W1ONuvDlSKt5apHX2gHrio_aPweK33P-5lFeN2Q5CbERmyZ0nV2znEhD7xAj0QSUN-UmjswYwh4xKfwzvd2UsVdTiRK4nQir_SrJM_Z5R6oDpl_HmhcTpibRrrvsjW2dsRumAN0dm2S8DwNED5F4iDfZRnJ0ANrKCQ2gD40tjOUj2-VSJM2MI8m2TQ9CVatyi0bTxwrjdyb2fV7nnHEJ6c0L2ijJJQOUeCuTBDtxPDzj6R6KkDj2kuVB3I9NscwNL3vh_vgZrNedbhHTajEfmtcmQ8eSW-c6PtVqP2Qp0QHtCzI0FY1bvGxfm-zzOQQIc1Vm_jiszkIRYWQs');
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        @keyframes typeWriter {
+            0% { width: 0; opacity: 1; }
+            50% { width: 100%; opacity: 1; }
+            90% { width: 100%; opacity: 0; }
+            100% { width: 0; opacity: 0; }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .main-content.visible {
+            display: flex;
+            opacity: 1;
+        }
+        .page-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.5s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            transform: translateY(100%);
+            animation: pageEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            overflow-y: auto;
+        }
+
+        .page-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-content.exiting {
+            animation: pageExit 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .page-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .page-content .content-wrapper {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 2rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(201, 201, 201, 0.5) rgba(0, 0, 0, 0.3);
+        }
+
+        .content-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content-wrapper::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tool-link, .lang-link {
+            cursor: pointer;
+            transition: color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            color: #fff;
+            text-shadow: none;
+        }
+
+        .tool-link::after, .lang-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+
+        .tool-link:hover::after, .lang-link:hover::after {
+            width: 100%;
+        }
+
+        .tool-link:hover .icon-wrapper, .lang-link:hover .icon-wrapper {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        .icon-wrapper {
+            font-size: 1.2em;
+            color: #fff;
+            text-shadow: none;
+            opacity: 0.7;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .pixel-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            background-color: #fff;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            margin-right: 8px;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100%;
+        }
+
+        .page-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border-left: 3px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-block {
+            position: relative;
+            padding: 1rem 1rem 1rem 4rem;
+            counter-reset: line;
+            font-family: 'VT323', monospace;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            display: block;
+        }
+
+        .code-block code > div {
+            position: relative;
+            padding-left: 3.5rem;
+            min-height: 1.5em;
+        }
+
+        .code-block code > div::before {
+            content: counter(line);
+            counter-increment: line;
+            position: absolute;
+            left: 0;
+            width: 3rem;
+            text-align: right;
+            color: #666;
+            padding-right: 0.5rem;
+            border-right: 1px solid #555;
+        }
+
+        /* Syntax Highlighting */
+        .keyword { color: #ffffff; font-weight: bold; }
+        .string { color: #e6e6e6; }
+        .function { color: #f0f0f0; font-weight: bold; }
+        .number { color: #d4d4d4; }
+        .operator { color: #ffffff; }
+        .class { color: #ffffff; text-decoration: underline; }
+
+        /* Line Numbers */
+        .code-block {
+            counter-reset: line;
+        }
+        
+        .code-block > code {
+            display: block;
+            position: relative;
+            padding-left: 3.8em;
+        }
+        
+        .code-block > code::before {
+            content: counter(line);
+            counter-increment: line;
+            position: absolute;
+            left: -3em;
+            width: 2.5em;
+            text-align: right;
+            color: #666;
+            padding-right: 1em;
+            border-right: 1px solid #555;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, border-color 0.3s;
+            text-align: center;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .pixel-divider {
+            height: 4px;
+            background: repeating-linear-gradient(
+                to right,
+                transparent 0,
+                transparent 4px,
+                rgba(255, 255, 255, 0.3) 4px,
+                rgba(255, 255, 255, 0.3) 8px
+            );
+            margin: 2rem 0;
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            animation: scanline 2s linear infinite;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        h1:hover {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes pageEnter {
+            0% { 
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            50% { 
+                transform: translateY(-2%);
+                opacity: 0.8;
+            }
+            100% { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pageExit {
+            0% { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        body, .main-content, .page-content, .card, .card-content, .content-wrapper, .feature-item, .section-title, .skills, .tools, .contact,
+        a, button, .tool-link, .lang-link, .avatar-link, .music-control, .back-button {
+            cursor: none !important;
+        }
+        #pixelCursorTrail {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 99999;
+        }
+        .pixel-cursor-dot {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 0 8px #fff, 0 0 24px rgb(255, 255, 255), 0 0 32px #fff2;
+            mix-blend-mode: lighten;
+            opacity: 0.8;
+            transition: opacity 0.2s, background 0.2s, box-shadow 0.2s;
+            will-change: transform;
+        }
+        .pixel-cursor-dot.glow {
+            background: rgb(255, 255, 255);
+            box-shadow: 0 0 16px rgb(255, 255, 255), 0 0 32px #fff, 0 0 48px rgba(151, 151, 151, 0.4);
+            opacity: 1;
+        }
+        .pixel-cursor-dot.ring {
+            border: 2px solid #fff;
+            background: transparent;
+            width: 18px;
+            height: 18px;
+            box-shadow: 0 0 24px rgba(255, 255, 255, 0.533), 0 0 48px #fff2;
+            opacity: 0.5;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">INITIALISIERUNG DES SYSTEMS...</div>
+        <div class="warning-text">KLICKEN SIE ZUM FORTFAHREN</div>
+    </div>
+
+    <div class="noise"></div>
+
+    <div class="main-content" id="mainContent">
+        <div class="video-wrapper">
+            <video autoplay muted loop class="video-bg">
+                <source src="Creepy Horror - Dark Circle - Moving Background.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+        </div>
+        
+        <audio id="bgMusic" loop>
+            <source src="Robinson's Village.mp3" type="audio/mp3">
+        </audio>
+        
+        <button class="music-control" onclick="toggleMusic()">🎵</button>
+        
+        <div class="card">
+            <a href="#" target="_blank" class="avatar-link">
+                <img src="https://avatars.mds.yandex.net/i?id=15013b119e55de7db768b6db41ca510cac42b485-9067973-images-thumbs&n=13" alt="Avatar" class="avatar">
+            </a>
+            <div class="card-content">
+                <h1>DeJaVJy</h1>
+                
+                <div class="skills">
+                    <div class="section-title">SPRACHEN</div>
+                    <span class="lang-link" data-lang="python"><i class="fab fa-python icon-wrapper"></i>PYTHON</span> • 
+                    <span class="lang-link" data-lang="rust"><i class="fab fa-rust icon-wrapper"></i>RUST</span> • 
+                    <span class="lang-link" data-lang="cpp"><i class="fas fa-file-code icon-wrapper"></i>C++</span> • 
+                    <span class="lang-link" data-lang="sql"><i class="fas fa-database icon-wrapper"></i>SQL</span> • 
+                    <span class="lang-link" data-lang="web"><i class="fas fa-globe icon-wrapper"></i>WEB</span> • 
+                    <span class="lang-link" data-lang="asm"><i class="fas fa-microchip icon-wrapper"></i>ASM</span>
+                </div>
+
+                <div class="tools">
+                    <div class="section-title">WERKZEUGE</div>
+                    <span class="tool-link" data-tool="vim">VIM</span> • 
+                    <span class="tool-link" data-tool="vscode">VSCODE</span> • 
+                    <span class="tool-link" data-tool="ida">IDA PRO</span> •
+                    <span class="tool-link" data-tool="ngrab">NGRAB</span>
+                </div>
+
+                <div class="contact">
+                    <div class="section-title">KONTAKT</div>
+                    #bin11011 • @dejavjy
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="pageSystem"></div>
+    <div id="pixelCursorTrail"></div>
+
+    <script>
+        const loadingScreen = document.getElementById('loadingScreen');
+        const mainContent = document.getElementById('mainContent');
+        const music = document.getElementById('bgMusic');
+
+        loadingScreen.addEventListener('click', () => {
+            loadingScreen.style.transform = 'scale(1.1)';
+            loadingScreen.style.filter = 'brightness(2)';
+            loadingScreen.style.transition = 'all 0.5s';
+            
+            music.volume = 0;
+            music.play();
+            
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                mainContent.classList.add('visible');
+                
+                let vol = 0;
+                const fadeIn = setInterval(() => {
+                    if (vol < 1) {
+                        vol += 0.1;
+                        music.volume = vol;
+                    } else {
+                        clearInterval(fadeIn);
+                    }
+                }, 200);
+            }, 500);
+            
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 1500);
+        });
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+            } else {
+                music.pause();
+            }
+        }
+
+        function closePage(element) {
+            element.classList.add('exiting');
+            element.addEventListener('animationend', () => {
+                element.remove();
+            }, { once: true });
+        }
+
+        const pages = {
+            tools: {
+                vim: {
+                    title: "VIM",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2><div class="pixel-icon" style="mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" /></svg>');"></div>VIM</h2>
+                            <div class="pixel-divider"></div>
+                            
+                            <div class="page-section" style="border-color: rgba(255,255,255,0.2)">
+                                <h3>Funktionen</h3>
+                                <div class="feature-grid">
+                                    <div class="feature-item">Modales Editieren</div>
+                                    <div class="feature-item">Anpassbar</div>
+                                    <div class="feature-item">Skriptfähig</div>
+                                </div>
+                            </div>
+
+                            <div class="page-section" style="border-color: rgba(255,255,255,0.2)">
+                                <h3>Häufige Befehle</h3>
+                                <div class="code-block">
+                                    :q - Beenden
+                                    :w - Speichern
+                                    :wq - Speichern & Beenden
+                                    dd - Zeile löschen
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                vscode: {
+                    title: "VSCode",
+                    icon: "fa-code",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2><div class="pixel-icon" style="mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" /></svg>');"></div>VSCode</h2>
+                            <div class="pixel-divider"></div>
+                            
+                            <div class="page-section" style="border-color: rgba(255,255,255,0.2)">
+                                <h3>Funktionen</h3>
+                                <div class="feature-grid">
+                                    <div class="feature-item">Moderne IDE-Funktionen</div>
+                                    <div class="feature-item">Erweitertes Ökosystem</div>
+                                    <div class="feature-item">Integriertes Debugging</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                ida: {
+                    title: "IDA PRO",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>IDA PRO</h2>
+                            <div class="page-section">
+                                <h3>Features</h3>
+                                <div class="feature-grid">
+                                    <div class="feature-item">Binary Analysis</div>
+                                    <div class="feature-item">Decompilation</div>
+                                    <div class="feature-item">Debugging</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                ngrab: {
+                    title: "NGRAB",
+                    icon: "fa-network-wired",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2><div class="pixel-icon" style="mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" /></svg>');"></div>NGRAB</h2>
+                            <div class="pixel-divider"></div>
+                            
+                            <div class="page-section" style="border-color: rgba(255,255,255,0.2)">
+                                <h3>Funktionen</h3>
+                                <div class="feature-grid">
+                                    <div class="feature-item">Benutzerdefiniertes Netzwerk-Tool</div>
+                                    <div class="feature-item">Erweiterte Paket-Analyse</div>
+                                    <div class="feature-item">Netzwerkoptimierung</div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                }
+            },
+            languages: {
+                python: {
+                    title: "Python",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>Python</h2>
+                            <div class="page-section">
+                                <h3>Hello World</h3>
+                                <pre class="code-block">
+name = "World"
+print(f"Hello, {name}!")</pre>
+                            </div>
+                        </div>
+                    `
+                },
+                rust: {
+                    title: "Rust",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>Rust</h2>
+                            <div class="page-section">
+                                <h3>Hello World</h3>
+                                <pre class="code-block">
+fn main() {
+    println!("Hello, World!");
+}</pre>
+                            </div>
+                        </div>
+                    `
+                },
+                cpp: {
+                    title: "C++",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>C++</h2>
+                            <div class="page-section">
+                                <h3>Hello World</h3>
+                                <pre class="code-block">
+#include <iostream>
+int main() {
+    std::cout << "Hello, World!" << std::endl;
+    return 0;
+}</pre>
+                            </div>
+                        </div>
+                    `
+                },
+                sql: {
+                    title: "SQL",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>SQL</h2>
+                            <div class="page-section">
+                                <h3>Basic Query</h3>
+                                <pre class="code-block">
+SELECT name, age 
+FROM users 
+WHERE age > 18 
+ORDER BY name;</pre>
+                            </div>
+                        </div>
+                    `
+                },
+                web: {
+                    title: "Web Development",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>HTML/CSS/JS</h2>
+                            <div class="page-section">
+                                <h3>Simple Web Page</h3>
+                                <pre class="code-block">
+<!-- HTML -->
+<div class="hello">Click me</div>
+
+<!-- CSS -->
+.hello {
+    color: white;
+    padding: 20px;
+    cursor: pointer;
+}
+
+<!-- JavaScript -->
+document.querySelector('.hello').onclick = () => {
+    alert('Hello, World!');
+}</pre>
+                            </div>
+                        </div>
+                    `
+                },
+                asm: {
+                    title: "Assembly",
+                    content: `
+                        <div class="content-wrapper">
+                            <h2>Assembly</h2>
+                            <div class="page-section">
+                                <h3>Hello World</h3>
+                                <pre class="code-block">
+section .data
+    msg db 'Hello!',0
+
+section .text
+    global _start
+_start:
+    mov edx, 6      ; length
+    mov ecx, msg    ; message
+    mov ebx, 1      ; stdout
+    mov eax, 4      ; sys_write
+    int 0x80        ; syscall</pre>
+                            </div>
+                        </div>
+                    `
+                }
+            }
+        };
+
+        function createPageSystem() {
+            const pageSystem = document.getElementById('pageSystem');
+            
+            document.querySelectorAll('.tool-link, .lang-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    const type = link.classList.contains('tool-link') ? 'tools' : 'languages';
+                    const id = link.dataset.tool || link.dataset.lang;
+                    showPage(type, id);
+                });
+            });
+
+            function showPage(type, id) {
+                const page = pages[type][id];
+                const pageContent = document.createElement('div');
+                pageContent.className = 'page-content';
+                pageContent.innerHTML = `
+                    <button class="back-button" onclick="closePage(this.parentElement)">ZURÜCK</button>
+                    ${page.content}
+                `;
+                pageSystem.appendChild(pageContent);
+                requestAnimationFrame(() => pageContent.classList.add('active'));
+            }
+        }
+
+        window.addEventListener('load', createPageSystem);
+
+        const titles = ['DeJaVJy:', 'D%', 'De;', 'DeJ№', 'DeJa?', 'DeJaV&', 'DeJaVJ*', 'DeJaVJy@'];
+        let titleIndex = 0;
+
+        setInterval(() => {
+            document.title = titles[titleIndex];
+            titleIndex = (titleIndex + 1) % titles.length;
+        }, 300);
+
+        (function() {
+            const trailLength = 10;
+            const trail = [];
+            const trailContainer = document.getElementById('pixelCursorTrail');
+            for (let i = 0; i < trailLength; ++i) {
+                const dot = document.createElement('div');
+                dot.className = 'pixel-cursor-dot';
+                if (i === 0) dot.classList.add('glow');
+                if (i === 1) dot.classList.add('ring');
+                dot.style.opacity = (1 - i / trailLength).toFixed(2);
+                trailContainer.appendChild(dot);
+                trail.push({el: dot, x: window.innerWidth/2, y: window.innerHeight/2});
+            }
+            let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+            document.addEventListener('mousemove', e => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            function animate() {
+                let prevX = mouseX, prevY = mouseY;
+                for (let i = 0; i < trail.length; ++i) {
+                    const dot = trail[i];
+                    dot.x += (prevX - dot.x) * (i === 0 ? 0.5 : 0.25);
+                    dot.y += (prevY - dot.y) * (i === 0 ? 0.5 : 0.25);
+                    dot.el.style.transform = `translate(${dot.x - dot.el.offsetWidth/2}px,${dot.y - dot.el.offsetHeight/2}px)`;
+                    prevX = dot.x;
+                    prevY = dot.y;
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            document.addEventListener('mousedown', () => {
+                if (trail[1]) {
+                    trail[1].el.classList.add('glow');
+                    setTimeout(() => trail[1].el.classList.remove('glow'), 200);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
